@@ -9,7 +9,7 @@ export default class AdditionInteractor
         usecase: AdditionUseCase,
         outputPort: AbstractAdditionOutput
     ): Promise<UseCaseResult> {
-        outputPort.addNumbers(4, 5);
+        outputPort.addNumbers(usecase.num1, 5);
         return new UseCaseResult(true);
     }
 }

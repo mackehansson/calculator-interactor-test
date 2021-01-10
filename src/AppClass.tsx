@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { SelfContainedResolver } from "interactr/SelfContainedResolver";
 import { InteractorHub } from "interactr/InteractorHub";
+import { Hub } from "interactr/Hub";
 import AdditionInteractor from "./core/addition/addition.interactor";
 import AdditionUseCase from "./core/addition/addition";
 import { AdditionOuput } from "./core/addition/addition.output";
@@ -44,6 +45,7 @@ export default class App extends Component<Props, State> {
         const resolver = new SelfContainedResolver();
         resolver.registerInteractor(new AdditionInteractor(), AdditionUseCase);
         resolver.registerMiddleware(new AdditionMiddleware(), AdditionUseCase);
+
         const hub = new InteractorHub(resolver);
         const result = await hub.execute(
             new AdditionUseCase(),
