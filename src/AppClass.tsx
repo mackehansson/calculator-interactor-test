@@ -15,6 +15,7 @@ import { InteractorHub } from "interactr/InteractorHub";
 import AdditionInteractor from "./core/addition/addition.interactor";
 import AdditionUseCase from "./core/addition/addition";
 import { AdditionOuput } from "./core/addition/addition.output";
+import AdditionMiddleware from "./core/addition/addition.middleware";
 
 interface Props {}
 
@@ -42,6 +43,7 @@ export default class App extends Component<Props, State> {
     async componentDidMount() {
         const resolver = new SelfContainedResolver();
         resolver.registerInteractor(new AdditionInteractor(), AdditionUseCase);
+        resolver.registerMiddleware(new AdditionMiddleware(), AdditionUseCase);
         const hub = new InteractorHub(resolver);
         const result = await hub.execute(
             new AdditionUseCase(),
