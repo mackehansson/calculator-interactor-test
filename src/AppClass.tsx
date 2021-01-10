@@ -10,16 +10,13 @@ import {
     GridItem,
     Heading,
 } from "@chakra-ui/react";
-import { SelfContainedResolver } from "interactr/SelfContainedResolver";
-import { InteractorHub } from "interactr/InteractorHub";
-import { Hub } from "interactr/Hub";
-import AdditionInteractor from "./core/addition/addition.interactor";
-import AdditionUseCase from "./core/addition/addition";
-import { AdditionOuput } from "./core/addition/addition.output";
-import AdditionMiddleware from "./core/addition/addition.middleware";
+import { InteractorHub } from "interactr/interactor.hub";
 
-interface Props {}
+import { ICalculationOutput, CalculationUseCase } from "./core/calculation";
 
+interface Props {
+    interactor: InteractorHub;
+}
 interface State {
     memory: string | null;
     calcMethod: string | null;
@@ -28,7 +25,9 @@ interface State {
     puttingInNumber: boolean;
 }
 
-export default class App extends Component<Props, State> {
+export default class App
+    extends Component<Props, State>
+    implements ICalculationOutput {
     constructor(props: Props) {
         super(props);
 
@@ -41,17 +40,15 @@ export default class App extends Component<Props, State> {
         };
     }
 
-    async componentDidMount() {
-        const resolver = new SelfContainedResolver();
-        resolver.registerInteractor(new AdditionInteractor(), AdditionUseCase);
-        resolver.registerMiddleware(new AdditionMiddleware(), AdditionUseCase);
-
-        const hub = new InteractorHub(resolver);
-        const result = await hub.execute(
-            new AdditionUseCase(),
-            new AdditionOuput()
+    async displayResult(result: string) {
+        this.setState(
+            await produce(this.state, (draft) => {
+                draft.display = result;
+                draft.calcMethod = null;
+                draft.memory = result;
+                draft.calculatedResult = true;
+            })
         );
-        console.log(result.success);
     }
 
     onNumberPress(num: string) {
@@ -138,31 +135,13 @@ export default class App extends Component<Props, State> {
     onCalculate() {
         if (!this.state.memory) return;
 
-        let result = 0;
-
-        if (this.state.calcMethod === "+") {
-            result = +this.state.memory + +this.state.display;
-        }
-
-        if (this.state.calcMethod === "-") {
-            result = +this.state.memory - +this.state.display;
-        }
-
-        if (this.state.calcMethod === "/") {
-            result = +this.state.memory / +this.state.display;
-        }
-
-        if (this.state.calcMethod === "x") {
-            result = +this.state.memory * +this.state.display;
-        }
-
-        this.setState(
-            produce(this.state, (draft) => {
-                draft.display = result.toString();
-                draft.calcMethod = null;
-                draft.memory = result.toString();
-                draft.calculatedResult = true;
-            })
+        this.props.interactor.execute(
+            new CalculationUseCase(
+                this.state.memory,
+                this.state.display,
+                this.state.calcMethod ? this.state.calcMethod : ""
+            ),
+            this
         );
     }
 
